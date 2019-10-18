@@ -11,11 +11,12 @@ using namespace std;
 
 const short MAX_FILE_NAME = 80;
 const short MAX_HUFFMAN_TABLE = 513;
+const int END_OF_FILE = 256;
 
 // TODO: Remove temp constant
 
 struct HuffmanNode {
-	unsigned char glyph;
+	int glyph;
 	int frequency = 0;
 	int leftChildIndex, rightChildIndex = -1;
 };
@@ -44,7 +45,7 @@ int main() {
 	ifstream fin(filename, ios::binary | ios::in | ios::ate);
 
 	// Assuming that the file is smaller than RAM
-	int finSize = fin.tellg();
+	long long finSize = fin.tellg();
 	unsigned char* contents = new unsigned char[finSize];
 	fin.seekg(0, ios::beg);
 	fin.read((char*)contents, finSize);
@@ -55,8 +56,12 @@ int main() {
 	for (int i = 0; i < finSize; i++) {
 		int index = (int)contents[i];
 		huffmanTable[index].frequency++;
-		huffmanTable[index].glyph = contents[i];
+		huffmanTable[index].glyph = index;
 	}
+
+	// Add EOF byte
+	huffmanTable[END_OF_FILE].frequency++;
+	huffmanTable[END_OF_FILE].glyph = END_OF_FILE;
 
 	sort(huffmanTable, huffmanTable + MAX_HUFFMAN_TABLE, sortHuffmanTable);
 
@@ -69,6 +74,7 @@ int main() {
 	}
 
 	// TODO: Huffman Algorithm
+
 
 	// De-allocate dynamic memory
 	delete[] contents;
