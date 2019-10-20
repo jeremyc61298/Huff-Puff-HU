@@ -18,10 +18,10 @@ const int END_OF_FILE = 256;
 const int MIN_HEAP_SIZE = 1;
 const int ROOT = 0;
 const int INVALID = -1;
+const int BYTE_SIZE = 8;
 const char* LEFT_HUFF_VALUE = "0";
 const char* RIGHT_HUFF_VALUE = "1";
-
-// TODO: Remove temp constant
+const string HUFF_EXT = "huf";
 
 struct HuffmanNode {
 	int glyph;
@@ -29,6 +29,12 @@ struct HuffmanNode {
 	int leftChildIndex = INVALID;
 	int rightChildIndex = INVALID;
 	string bitstring = "";
+};
+
+struct MinHuffmanNode {
+	int glyph;
+	int leftChildIndex = INVALID;
+	int rightChildIndex = INVALID;
 };
 
 // This function will sort the list in acending order with an exception: 
@@ -65,6 +71,7 @@ int main() {
 
 	// Find frequencies of all of the glyphs in the file
 	HuffmanNode huffmanTable[MAX_HUFFMAN_TABLE];
+	MinHuffmanNode minHuffmanTable[MAX_HUFFMAN_TABLE];
 
 	for (int i = 0; i < finSize; i++) {
 		int index = (int)contents[i];
@@ -113,7 +120,6 @@ int main() {
 			didReheap = false;
 
 			while (!didReheap) {
-
 				leftChild = (2 * currentElement) + 1;
 				rightChild = (2 * currentElement) + 2;
 				if (leftChild <= endOfHeap && huffmanTable[leftChild].frequency < currentFrequency) {
@@ -142,7 +148,6 @@ int main() {
 		didReheap = false;
 
 		while (!didReheap) {
-
 			leftChild = (2 * currentElement) + 1;
 			rightChild = (2 * currentElement) + 2;
 			if (leftChild < endOfHeap && huffmanTable[leftChild].frequency < currentFrequency) {
@@ -166,6 +171,13 @@ int main() {
 		endOfHeap--;
 	}
 
+	// Copy data into minHuffmanTable
+	for (int i = 0; i < nextFreeSlot; i++) {
+		minHuffmanTable[i].glyph = huffmanTable[i].glyph;
+		minHuffmanTable[i].leftChildIndex = huffmanTable[i].leftChildIndex;
+		minHuffmanTable[i].rightChildIndex = huffmanTable[i].rightChildIndex;
+	}
+
 #pragma endregion huffmanAlgorithm
 
 #pragma region buildBitstrings
@@ -174,6 +186,7 @@ int main() {
 	// Post-order traversal
 	stack<HuffmanNode> nodeStack;
 	HuffmanNode current = huffmanTable[ROOT];
+	long long numBitsWhenCompressed = 0;
 	
 	nodeStack.push(current);
 
@@ -184,6 +197,7 @@ int main() {
 		// Found a leaf
 		if (current.glyph != INVALID) {
 			bitstrings[current.glyph] = current.bitstring;
+			numBitsWhenCompressed += current.bitstring.size() * current.frequency;
 			continue;
 		}
 		
@@ -198,18 +212,73 @@ int main() {
 		}
 	}
 
-	/*int sum = 0;
-	for (int i = 0; i < nextFreeSlot - 1; i++) {
-		if (huffmanTable[i].glyph != INVALID)
-			sum += bitstrings[huffmanTable[i].glyph].size() * huffmanTable[i].frequency;
-	}*/
-
-	// cout << "This file will compress to " << sum << " bits" << endl;
+	long long numBytesWhenCompressed = ceil((double)numBitsWhenCompressed / (double)BYTE_SIZE);
+	cout << "Num bytes when compressed: " << numBytesWhenCompressed << endl;
 #pragma endregion buildBitstrings
 
 #pragma region outputFileProcessing
+	// Create outFileName
+	string inFileName = filename;
+	string outFileName = "";
+	size_t dotPos = inFileName.find_last_of(".");
 
+	if (dotPos == string::npos) {
+		// The inFileName does not contain a "."
+		outFileName = inFileName + "." + HUFF_EXT;
+	}
+	else {
+		// Replace all the characters after the "." with DMP_EXT
+		// This effectively creates a new string from the inFileName that 
+		// has the same "base" name but a dump file extension.
+		outFileName = inFileName.substr(0, dotPos + 1) + HUFF_EXT;
+	}
 
+	string outContents(numBytesWhenCompressed, '\0');
+	char currentOutByte = '\0';
+	short bitCount = 0;
+	long long currentOutByteIndex = 0;
+
+	for (int i = 0; i <= finSize; i++) {
+		const string& currentBitString = (i != finSize) ? bitstrings[contents[i]] : bitstrings[END_OF_FILE];
+
+		for (int j = 0; j < currentBitString.size(); j++) {
+			// Filled a byte
+			if (bitCount == BYTE_SIZE) {
+				outContents[currentOutByteIndex] = currentOutByte;
+				bitCount = 0;
+				currentOutByte = '\0';
+				currentOutByteIndex++;
+			}
+
+			// This code is modified from code that Dr. Ragsdale gave to the class
+			// is the bit "on"?
+			if (currentBitString[j] == '1')
+			{
+				// turn the bit on using the OR bitwise operator
+				currentOutByte = currentOutByte | (unsigned char)pow(2.0, bitCount);
+			}
+			bitCount++;
+		}
+	}
+
+	// Move last byte into outContents 
+	outContents[currentOutByteIndex] = currentOutByte;
+
+	ofstream fout(outFileName, ios::binary);
+
+	// Output name of file
+	unsigned int fileNameSize = inFileName.size();
+	fout.write((char*)& fileNameSize, sizeof(unsigned int));
+	fout.write((char*) inFileName.c_str(), fileNameSize);
+
+	// Output huffman tree
+	fout.write((char*)& nextFreeSlot, sizeof(int));
+	fout.write((char*) minHuffmanTable, sizeof(MinHuffmanNode) * nextFreeSlot);
+
+	// Output compressed data
+	fout.write((char*)outContents.c_str(), numBytesWhenCompressed);
+
+	fout.close();
 
 #pragma endregion outputFileProcessing
 	// De-allocate dynamic memory
