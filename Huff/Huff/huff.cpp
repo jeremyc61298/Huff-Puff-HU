@@ -6,6 +6,9 @@
 #include <fstream>
 #include <algorithm>
 #include <ctime>
+#include <iomanip>
+#include <stack>
+#include <string>
 
 using namespace std;
 
@@ -13,14 +16,19 @@ const short MAX_FILE_NAME = 80;
 const short MAX_HUFFMAN_TABLE = 513;
 const int END_OF_FILE = 256;
 const int MIN_HEAP_SIZE = 1;
+const int ROOT = 0;
+const int INVALID = -1;
+const char* LEFT_HUFF_VALUE = "0";
+const char* RIGHT_HUFF_VALUE = "1";
 
 // TODO: Remove temp constant
 
 struct HuffmanNode {
 	int glyph;
 	int frequency = 0;
-	int leftChildIndex = -1; 
-	int rightChildIndex = -1;
+	int leftChildIndex = INVALID;
+	int rightChildIndex = INVALID;
+	string bitstring = "";
 };
 
 // This function will sort the list in acending order with an exception: 
@@ -158,25 +166,58 @@ int main() {
 		endOfHeap--;
 	}
 
-	/*cout << "---------------------------------------" << endl;*/
-
-	/*numGlyphs = 0;
-	for (int i = 0; i < MAX_HUFFMAN_TABLE; i++) {
-		if (huffmanTable[i].frequency == 0) {
-			numGlyphs = i;
-			break;
-		}
-
-		cout << "Glyph: " << huffmanTable[i].glyph << dec << ", left: " << huffmanTable[i].leftChildIndex << ", right: " << huffmanTable[i].rightChildIndex << endl;
-	}*/
-
 #pragma endregion huffmanAlgorithm
 
+#pragma region buildBitstrings
+	string bitstrings[MAX_HUFFMAN_TABLE / 2 + 1];
+	
+	// Post-order traversal
+	stack<HuffmanNode> nodeStack;
+	HuffmanNode current = huffmanTable[ROOT];
+	
+	nodeStack.push(current);
+
+	while (!nodeStack.empty()) {
+		current = nodeStack.top();
+		nodeStack.pop();
+
+		// Found a leaf
+		if (current.glyph != INVALID) {
+			bitstrings[current.glyph] = current.bitstring;
+			continue;
+		}
+		
+		if (current.leftChildIndex != INVALID) {
+			huffmanTable[current.leftChildIndex].bitstring = current.bitstring + LEFT_HUFF_VALUE;
+			nodeStack.push(huffmanTable[current.leftChildIndex]);
+		}
+
+		if (current.rightChildIndex != INVALID) {
+			huffmanTable[current.rightChildIndex].bitstring = current.bitstring + RIGHT_HUFF_VALUE;
+			nodeStack.push(huffmanTable[current.rightChildIndex]);
+		}
+	}
+
+	/*int sum = 0;
+	for (int i = 0; i < nextFreeSlot - 1; i++) {
+		if (huffmanTable[i].glyph != INVALID)
+			sum += bitstrings[huffmanTable[i].glyph].size() * huffmanTable[i].frequency;
+	}*/
+
+	// cout << "This file will compress to " << sum << " bits" << endl;
+#pragma endregion buildBitstrings
+
+#pragma region outputFileProcessing
+
+
+
+#pragma endregion outputFileProcessing
 	// De-allocate dynamic memory
 	delete[] contents;
 
 	// END the clock
 	end = clock();
 
+	cout << setprecision(5) << fixed;
 	cout << "Time to compress: " << (double(end - start) / CLOCKS_PER_SEC) << endl;
 }
