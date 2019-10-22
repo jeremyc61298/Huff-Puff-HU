@@ -101,9 +101,9 @@ int main() {
 	int endOfHeap = numGlyphs - 1;
 	int nextFreeSlot = numGlyphs;
 	int marked;
-	int currentElement;
-	int leftChild;
-	int rightChild;
+	int currentElementIndex;
+	int leftChildIndex;
+	int rightChildIndex;
 	int currentFrequency;
 	bool didReheap;
 	for (int i = 0; i < numGlyphs - 1; i++) {
@@ -112,23 +112,26 @@ int main() {
 		huffmanTable[nextFreeSlot] = huffmanTable[marked];
 
 		// Move last node in tree heap to marked slot
+		huffmanTable[marked] = huffmanTable[endOfHeap];
 		if (marked < endOfHeap) {
-			huffmanTable[marked] = huffmanTable[endOfHeap];
 
-			currentElement = marked;
+			currentElementIndex = marked;
 			currentFrequency = huffmanTable[marked].frequency;
 			didReheap = false;
 
 			while (!didReheap) {
-				leftChild = (2 * currentElement) + 1;
-				rightChild = (2 * currentElement) + 2;
-				if (leftChild <= endOfHeap && huffmanTable[leftChild].frequency < currentFrequency) {
-					swap(huffmanTable[leftChild], huffmanTable[currentElement]);
-					currentElement = leftChild;
+				leftChildIndex = (2 * currentElementIndex) + 1;
+				rightChildIndex = (2 * currentElementIndex) + 2;
+
+				if (rightChildIndex < endOfHeap && 
+						huffmanTable[rightChildIndex].frequency < huffmanTable[leftChildIndex].frequency && 
+						currentFrequency > huffmanTable[rightChildIndex].frequency) {
+					swap(huffmanTable[rightChildIndex], huffmanTable[currentElementIndex]);
+					currentElementIndex = rightChildIndex;
 				}
-				else if (rightChild <= endOfHeap && huffmanTable[rightChild].frequency < currentFrequency) {
-					swap(huffmanTable[rightChild], huffmanTable[currentElement]);
-					currentElement = rightChild;
+				else if (leftChildIndex < endOfHeap && currentFrequency > huffmanTable[leftChildIndex].frequency) {
+					swap(huffmanTable[leftChildIndex], huffmanTable[currentElementIndex]);
+					currentElementIndex = leftChildIndex;
 				}
 				else {
 					didReheap = true;
@@ -143,29 +146,34 @@ int main() {
 		huffmanTable[0].glyph = -1;
 		huffmanTable[0].frequency = huffmanTable[endOfHeap].frequency + huffmanTable[nextFreeSlot].frequency;
 
-		currentElement = 0;
+		currentElementIndex = 0;
 		currentFrequency = huffmanTable[0].frequency;
 		didReheap = false;
 
-		while (!didReheap) {
-			leftChild = (2 * currentElement) + 1;
-			rightChild = (2 * currentElement) + 2;
-			if (leftChild < endOfHeap && huffmanTable[leftChild].frequency < currentFrequency) {
-				swap(huffmanTable[leftChild], huffmanTable[currentElement]);
-				currentElement = leftChild;
-			}
-			else if (rightChild < endOfHeap && huffmanTable[rightChild].frequency < currentFrequency) {
-				swap(huffmanTable[rightChild], huffmanTable[currentElement]);
-				currentElement = rightChild;
-			}
-			else {
-				didReheap = true;
+		if (marked < endOfHeap) {
+			while (!didReheap) {
+				leftChildIndex = (2 * currentElementIndex) + 1;
+				rightChildIndex = (2 * currentElementIndex) + 2;
+
+				if (rightChildIndex < endOfHeap &&
+					huffmanTable[rightChildIndex].frequency < huffmanTable[leftChildIndex].frequency &&
+					currentFrequency > huffmanTable[rightChildIndex].frequency) {
+					swap(huffmanTable[rightChildIndex], huffmanTable[currentElementIndex]);
+					currentElementIndex = rightChildIndex;
+				}
+				else if (leftChildIndex < endOfHeap && currentFrequency > huffmanTable[leftChildIndex].frequency) {
+					swap(huffmanTable[leftChildIndex], huffmanTable[currentElementIndex]);
+					currentElementIndex = leftChildIndex;
+				}
+				else {
+					didReheap = true;
+				}
 			}
 		}
 
 		// Possibly speed this up with a reference to the root
-		huffmanTable[currentElement].leftChildIndex = endOfHeap;
-		huffmanTable[currentElement].rightChildIndex = nextFreeSlot;
+		huffmanTable[currentElementIndex].leftChildIndex = endOfHeap;
+		huffmanTable[currentElementIndex].rightChildIndex = nextFreeSlot;
 		
 		nextFreeSlot++;
 		endOfHeap--;
