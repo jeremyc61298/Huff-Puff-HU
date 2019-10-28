@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{CFFBEFAD-193C-4DF7-BB17-47DBB436F257}</ProjectGuid>
+    <ProjectGuid>{2790504D-264A-4510-8E62-AD2012BBA298}</ProjectGuid>
     <RootNamespace>Puff</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -123,7 +123,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="puff.cpp" />
+    <ClCompile Include="Puff.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Desktop\text1.huf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

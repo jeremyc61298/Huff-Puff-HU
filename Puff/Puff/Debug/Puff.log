@@ -1,0 +1,5 @@
+﻿  Puff.cpp
+C:\Users\jthom\source\repos\Puff\Puff.cpp(44,1): warning C4326: return type of 'main' should be 'int' instead of 'void'
+C:\Users\jthom\source\repos\Puff\Puff.cpp(109,27): error C2676: binary '[': 'tableNode' does not define this operator or a conversion to a type acceptable to the predefined operator
+C:\Users\jthom\source\repos\Puff\Puff.cpp(110,27): error C2676: binary '[': 'tableNode' does not define this operator or a conversion to a type acceptable to the predefined operator
+C:\Users\jthom\source\repos\Puff\Puff.cpp(111,27): error C2676: binary '[': 'tableNode' does not define this operator or a conversion to a type acceptable to the predefined operator

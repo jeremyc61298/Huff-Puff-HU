@@ -15,8 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="puff.cpp">
+    <ClCompile Include="Puff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Desktop\text1.huf">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
