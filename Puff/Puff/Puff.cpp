@@ -8,6 +8,7 @@ using std::cin;
 using std::ifstream;
 using std::ofstream;
 using std::ios;
+using std::endl;
 
 /*
 	each node in the reconstructed huffman table will consist
@@ -38,7 +39,7 @@ struct decompressedFile
 
 // function templates
 void setFileParameters(ifstream& fin, decompressedFile& outFile);
-void createHuffmanTable(tableNode& huffmanTable, decompressedFile& outFile, ifstream& fin);
+void createHuffmanTable(tableNode* huffmanTable, decompressedFile& outFile, ifstream& fin);
 
 void main()
 {
@@ -57,18 +58,14 @@ void main()
 		decompressedFile outFile;
 
 		setFileParameters(fin, outFile);
-		
+		cout << outFile.fileNameLength << endl << outFile.fileName << endl << outFile.entriesInTable << endl;
 		// create output file with the given original file name
 		ofstream fout(outFile.fileName, ios::out | ios::binary);
-
-		// place a null terminator at the end of the filename, otherwise
-		// the filename will have junk at the end
-		outFile.fileName[outFile.fileNameLength] = '\0';
 
 		// allocate memory for huffman table
 		tableNode* huffmanTable = new tableNode[outFile.entriesInTable];
 
-		createHuffmanTable(*huffmanTable, outFile, fin);
+		createHuffmanTable(huffmanTable, outFile, fin);
 
 		fout.close();
 		fin.close();
@@ -89,8 +86,11 @@ void setFileParameters(ifstream& fin, decompressedFile& outFile)
 
 	outFile.fileName = new char[outFile.fileNameLength + 1];
 	fin.read(outFile.fileName, outFile.fileNameLength);
+	//  place a null terminator at the end of the filename, otherwise
+	// the filename will have junk at the end
+	outFile.fileName[outFile.fileNameLength] = '\0';
 
-	fin.read((char*)outFile.entriesInTable, sizeof outFile.entriesInTable);
+	fin.read((char*)&outFile.entriesInTable, sizeof outFile.entriesInTable);
 }
 
 /*
@@ -100,7 +100,7 @@ void setFileParameters(ifstream& fin, decompressedFile& outFile)
 	total entries.  it will read one table entry at a time by using the sizeof function.
 */
 
-void createHuffmanTable(tableNode& huffmanTable, decompressedFile& outFile, ifstream& fin)
+void createHuffmanTable(tableNode* huffmanTable, decompressedFile& outFile, ifstream& fin)
 {
 	for (int currentNode = 0; currentNode < outFile.entriesInTable; currentNode++)
 	{		
