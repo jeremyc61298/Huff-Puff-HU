@@ -39,7 +39,7 @@ struct decompressedFile
 	char* fileName;
 	int entriesInTable = 0;
 	tableNode huffTable[513];
-	string fileOutput;
+	char* fileOutput;
 };
 
 void main()
@@ -99,11 +99,7 @@ void main()
 			outFile.huffTable[currentNode].rightChild = currentTableNode.rightChild;
 		}
 
-		// create a string object which will contain the original data from
-		// the uncompressed file
-		string originalFileData = "";
-		bool endOfFile = false;
-		
+		bool endOfFile = false;		
 		unsigned char currentByte;
 		
 		// create a vector to hold the encoded data (remainder of
@@ -135,12 +131,16 @@ void main()
 				currentVectorValue = encodedData[currentVectorPosition];
 				// check to see if current position is the end of file
 				if (outFile.huffTable[huffTablePosition].glyph == 256)
+				{
 					endOfFile = true;
+					fout.write(outFile.fileOutput, sizeof outFile.fileOutput);
+				}
+					
 				// check to see if current position is a glyph
 				else if (outFile.huffTable[huffTablePosition].glyph != 256 &&
 					outFile.huffTable[huffTablePosition].glyph != -1)
 				{
-					originalFileData += (char)outFile.huffTable[huffTablePosition].glyph;
+					outFile.fileOutput += (unsigned char)outFile.huffTable[huffTablePosition].glyph;
 					// start back at the root of the huff table
 					huffTablePosition = 0;
 					// if this is the last bit, go on to the next byte
@@ -167,10 +167,7 @@ void main()
 					}
 				}
 			}
-		} while (!endOfFile);
-		
-		// no suitable conversion function from string to const char * exists
-		/*fout.write(originalFileData);*/
+		} while (!endOfFile);		
 			   
 		fout.close();
 		fin.close();
