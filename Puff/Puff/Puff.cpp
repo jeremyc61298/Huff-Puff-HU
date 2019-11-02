@@ -3,6 +3,8 @@
 #include <fstream>
 #include <bitset>
 #include <vector>
+#include <ctime>
+#include <iomanip>
 
 using std::string;
 using std::cout;
@@ -14,6 +16,7 @@ using std::endl;
 using std::streampos;
 using std::bitset;
 using std::vector;
+
 
 /*
 	each node in the reconstructed huffman table will consist
@@ -39,7 +42,7 @@ struct decompressedFile
 	char* fileName;
 	int entriesInTable = 0;
 	tableNode huffTable[513];
-	char* fileOutput;
+	unsigned char* fileOutput;
 };
 
 void main()
@@ -49,6 +52,10 @@ void main()
 	// query user for .huf file to be decompressed
 	cout << "File to decompress: ";
 	cin >> fileName;
+
+	// start timer
+	clock_t start, end;
+	start = clock();
 
 	// open .huf file for reading
 	ifstream fin(fileName, ios::in | ios::binary);
@@ -126,29 +133,25 @@ void main()
 		do
 		{
 			// loop through one byte at a time
-			for (int bitPos = 0; bitPos < 8; bitPos++)
+			for (int bitPos = 0; bitPos < 8 && !endOfFile; bitPos++)
 			{
 				currentVectorValue = encodedData[currentVectorPosition];
 				// check to see if current position is the end of file
 				if (outFile.huffTable[huffTablePosition].glyph == 256)
-				{
 					endOfFile = true;
-					fout.write(outFile.fileOutput, sizeof outFile.fileOutput);
-				}
 					
 				// check to see if current position is a glyph
 				else if (outFile.huffTable[huffTablePosition].glyph != 256 &&
 					outFile.huffTable[huffTablePosition].glyph != -1)
 				{
-					outFile.fileOutput += (unsigned char)outFile.huffTable[huffTablePosition].glyph;
+					fout.write((char*)&outFile.huffTable[huffTablePosition].glyph, sizeof
+					currentByte);
 					// start back at the root of the huff table
 					huffTablePosition = 0;
+					bitPos--;
 					// if this is the last bit, go on to the next byte
-					if (bitPos == 8)
-					{
-						bitPos = 0;
+					if (bitPos == 7)
 						currentVectorPosition++;
-					}
 				}
 				// if the current position is not a glyph or end of file,
 				// it must be a merge node
@@ -160,11 +163,8 @@ void main()
 					// if the bit is 0, move to the left child in huffman table
 					else
 						huffTablePosition = outFile.huffTable[huffTablePosition].leftChild;
-					if (bitPos == 8)
-					{
-						bitPos = 0;
+					if (bitPos == 7)
 						currentVectorPosition++;
-					}
 				}
 			}
 		} while (!endOfFile);		
@@ -172,4 +172,7 @@ void main()
 		fout.close();
 		fin.close();
 	}
+	end = clock();
+	cout << std::setprecision(4) << std::fixed;
+	cout << "Time to decompress: " << (double(end - start) / CLOCKS_PER_SEC) << endl;
 }
