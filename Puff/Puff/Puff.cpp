@@ -1,3 +1,5 @@
+// Puff file for Jeremy Campbell and Jon Thompson
+
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -58,17 +60,7 @@ void main()
 	start = clock();
 
 	// open .huf file for reading
-	ifstream fin(fileName, ios::in | ios::binary);
-
-	/*streampos begin, end;
-	begin = fin.tellg();
-	fin.seekg(0, ios::end);
-	end = fin.tellg();
-	int fileSize = end - begin;
-	fin.seekg(0, ios::beg);
-
-	vector <char> hufFile;*/
-	
+	ifstream fin(fileName, ios::in | ios::binary);	
 
 	if (fin.is_open())
 	{
@@ -171,6 +163,7 @@ void main()
 			   
 		fout.close();
 		fin.close();
+		delete outFile.fileName;
 	}
 	end = clock();
 	cout << std::setprecision(4) << std::fixed;
