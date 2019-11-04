@@ -221,7 +221,6 @@ int main() {
 	}
 
 	long long numBytesWhenCompressed = ceil((double)numBitsWhenCompressed / (double)BYTE_SIZE);
-	cout << "Num bytes when compressed: " << numBytesWhenCompressed << endl;
 #pragma endregion buildBitstrings
 
 #pragma region outputFileProcessing
